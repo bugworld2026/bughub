@@ -9,32 +9,6 @@
     - memory.md §14.8 (Machine-Agnostic Schema)
     - memory.md §16 (BUGWORLD Governance)
     - tasks_manifest.json TASK-060 through TASK-073
-    
-.PARAMETER GUID
-    Client GUID (FSC62+ validated: a-z, 0-9, A-Z, dash)
-    
-.PARAMETER ENV
-    Environment identifier (alphanumeric + dash, unique per GUID)
-    
-.PARAMETER SkipATA
-    Skip the ATA ritual execution post-installation
-    
-.PARAMETER ForcePermanent
-    Allow removal of permanent nodes during uninstall (DANGEROUS)
-    
-.PARAMETER DryRun
-    Show what would be installed without executing
-    
-.EXAMPLE
-    .\install.ps1 -GUID "my-guid-123" -ENV "production"
-    
-.EXAMPLE
-    .\install.ps1 -GUID "my-guid-123" -ENV "dev" -SkipATA
-    
-.NOTES
-    Version: 1.0.0
-    Author: Team 295905 (q-, -q, qq)
-    Task: TASK-060 through TASK-073
 #>
 
 [CmdletBinding()]
@@ -70,47 +44,35 @@ $SessionsPath = Join-Path $WorkspacePath "sessions\x\0\logs"
 $ManifestPath = Join-Path $DocsPath "install_manifest.json"
 $LogPath = Join-Path $SessionsPath "install_$((Get-Date).ToString('yyyyMMdd_HHmmss')).log"
 
-# Ensure log directory exists
 if (-not (Test-Path $SessionsPath)) {
     New-Item -ItemType Directory -Force -Path $SessionsPath | Out-Null
 }
 
-# Logging function
 function Write-InstallLog {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Message,
-        
         [Parameter(Mandatory=$false)]
         [ValidateSet('INFO', 'SUCCESS', 'WARNING', 'ERROR')]
         [string]$Level = 'INFO'
     )
-    
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $logEntry = "[$timestamp] [$Level] $Message"
-    
     switch ($Level) {
         'SUCCESS' { Write-Host $logEntry -ForegroundColor Green }
         'WARNING' { Write-Host $logEntry -ForegroundColor Yellow }
         'ERROR' { Write-Host $logEntry -ForegroundColor Red }
         default { Write-Host $logEntry }
     }
-    
     $logEntry | Out-File -FilePath $LogPath -Append -Encoding UTF8
 }
 
 function Initialize-InstallManifest {
     [CmdletBinding()]
     param()
-    
     Write-InstallLog "Creating installation manifest..." -Level INFO
     $manifest = New-InstallManifest -GUID $GUID -ENV $ENV -InstallerVersion $InstallerVersion
-    
-    if ($DryRun) {
-        Write-InstallLog "[DRY RUN] Manifest would be saved to: $ManifestPath" -Level WARNING
-        return $manifest
-    }
-    
+    if ($DryRun) { Write-InstallLog "[DRY RUN] Manifest would be saved to: $ManifestPath" -Level WARNING; return $manifest }
     Save-InstallManifest -Manifest $manifest -Path $ManifestPath
     Write-InstallLog "Installation manifest created: $ManifestPath" -Level SUCCESS
     return $manifest
@@ -119,20 +81,13 @@ function Initialize-InstallManifest {
 function Create-ThreeRootStructure {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
     Write-InstallLog "Creating three-root filesystem structure..." -Level INFO
     $allPaths = @($Manifest.filesystem.roots) + @($Manifest.filesystem.directories)
-    
     foreach ($path in $allPaths) {
-        if ($DryRun) {
-            Write-InstallLog "[DRY RUN] Would create directory: $path" -Level WARNING
-        } else {
-            if (-not (Test-Path $path)) {
-                New-Item -ItemType Directory -Force -Path $path | Out-Null
-                Write-InstallLog "Created: $path" -Level SUCCESS
-            } else {
-                Write-InstallLog "Already exists: $path" -Level INFO
-            }
+        if ($DryRun) { Write-InstallLog "[DRY RUN] Would create directory: $path" -Level WARNING }
+        else {
+            if (-not (Test-Path $path)) { New-Item -ItemType Directory -Force -Path $path | Out-Null; Write-InstallLog "Created: $path" -Level SUCCESS }
+            else { Write-InstallLog "Already exists: $path" -Level INFO }
         }
     }
 }
@@ -140,16 +95,11 @@ function Create-ThreeRootStructure {
 function Create-ServiceStubs {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
     Write-InstallLog "Creating 12 permanent service stubs..." -Level INFO
     $servicesPath = Join-Path $BUGWORLD_ROOT "workspace\services"
-    
     foreach ($service in $Manifest.filesystem.services) {
         $servicePath = Join-Path $servicesPath $service.name
-        if ($DryRun) {
-            Write-InstallLog "[DRY RUN] Would create service stub: $($service.name) (Port $($service.port))" -Level WARNING
-            continue
-        }
+        if ($DryRun) { Write-InstallLog "[DRY RUN] Would create service stub: $($service.name) (Port $($service.port))" -Level WARNING; continue }
         if (-not (Test-Path $servicePath)) {
             New-Item -ItemType Directory -Force -Path $servicePath | Out-Null
             $packageJson = @{name=$service.name; version="1.0.0"; description="BUGWORLD 2026 - $($service.name)"} | ConvertTo-Json
@@ -162,18 +112,12 @@ function Create-ServiceStubs {
 function Create-MCPNodeStubs {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
     Write-InstallLog "Creating MCP node stubs..." -Level INFO
     $agentPath = Join-Path $BUGWORLD_ROOT "agent\x\0\$GUID\$ENV"
-    
     foreach ($node in $Manifest.filesystem.mcp_nodes) {
         $identityForm = $node.identity -replace '^dbug', ''
         $nodePath = Join-Path $agentPath "$identityForm\$identityForm\mcp"
-        
-        if ($DryRun) {
-            Write-InstallLog "[DRY RUN] Would create MCP node: $($node.identity) (Port $($node.port))" -Level WARNING
-            continue
-        }
+        if ($DryRun) { Write-InstallLog "[DRY RUN] Would create MCP node: $($node.identity) (Port $($node.port))" -Level WARNING; continue }
         if (-not (Test-Path $nodePath)) {
             New-Item -ItemType Directory -Force -Path $nodePath | Out-Null
             $serverPy = "# BUGWORLD 2026 - MCP Node Stub`n# Identity: $($node.identity)`n# Port: $($node.port)`n# Role: $($node.role)"
@@ -186,21 +130,15 @@ function Create-MCPNodeStubs {
 function Create-PermanentNodes {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
     Write-InstallLog "Creating PERMANENT nodes (secret_agent + superid)..." -Level INFO
     Write-InstallLog "⚠️  These nodes CANNOT be removed without --force-permanent flag" -Level WARNING
-    
     $permanentNodes = @(
         @{Path=$Manifest.permanent_nodes.secret_agent.path; Identity=$Manifest.permanent_nodes.secret_agent.identity},
         @{Path=$Manifest.permanent_nodes.superid.path; Identity=$Manifest.permanent_nodes.superid.identity}
     )
-    
     foreach ($node in $permanentNodes) {
         $nodeDir = Split-Path -Parent $node.Path
-        if ($DryRun) {
-            Write-InstallLog "[DRY RUN] Would create PERMANENT node: $($node.Identity)" -Level WARNING
-            continue
-        }
+        if ($DryRun) { Write-InstallLog "[DRY RUN] Would create PERMANENT node: $($node.Identity)" -Level WARNING; continue }
         if (-not (Test-Path $nodeDir)) {
             New-Item -ItemType Directory -Force -Path $nodeDir | Out-Null
             $serverPy = "# BUGWORLD 2026 - PERMANENT NODE`n# Identity: $($node.Identity)`n# Permanent: TRUE"
@@ -213,16 +151,10 @@ function Create-PermanentNodes {
 function Write-RegistryKeys {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
     Write-InstallLog "Writing Windows registry keys..." -Level INFO
     if ($DryRun) { return }
-    
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if (-not $isAdmin) {
-        Write-InstallLog "⚠️  Not running as administrator. Registry keys will not be written." -Level WARNING
-        return
-    }
-    
+    if (-not $isAdmin) { Write-InstallLog "⚠️  Not running as administrator. Registry keys will not be written." -Level WARNING; return }
     try {
         $bugworldKey = "HKLM:\SOFTWARE\BUGWORLD"
         if (-not (Test-Path $bugworldKey)) { New-Item -Path $bugworldKey -Force | Out-Null }
@@ -231,61 +163,42 @@ function Write-RegistryKeys {
         New-ItemProperty -Path $bugworldKey -Name "GUID" -Value $GUID -PropertyType String -Force | Out-Null
         New-ItemProperty -Path $bugworldKey -Name "ENV" -Value $ENV -PropertyType String -Force | Out-Null
         Write-InstallLog "Registry keys written to: HKLM:\SOFTWARE\BUGWORLD" -Level SUCCESS
-    } catch {
-        Write-InstallLog "Failed to write registry keys: $_" -Level ERROR
-    }
+    } catch { Write-InstallLog "Failed to write registry keys: $_" -Level ERROR }
 }
 
 function Set-EnvironmentVariables {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
     Write-InstallLog "Setting environment variables..." -Level INFO
     if ($DryRun) { return }
-    
     try {
         [Environment]::SetEnvironmentVariable("BUGWORLD_ROOT", $BUGWORLD_ROOT, "Machine")
         [Environment]::SetEnvironmentVariable("BUGWORLD_GUID", $GUID, "Machine")
         [Environment]::SetEnvironmentVariable("BUGWORLD_ENV", $ENV, "Machine")
         Write-InstallLog "Environment variables set (machine-level)" -Level SUCCESS
-    } catch {
-        Write-InstallLog "Failed to set environment variables: $_" -Level ERROR
-    }
+    } catch { Write-InstallLog "Failed to set environment variables: $_" -Level ERROR }
 }
 
 function Invoke-ATARitual {
     [CmdletBinding()]
     param([Parameter(Mandatory=$true)] [hashtable]$Manifest)
-    
-    if ($SkipATA) {
-        Write-InstallLog "Skipping ATA ritual (--SkipATA specified)" -Level WARNING
-        return
-    }
-    
+    if ($SkipATA) { Write-InstallLog "Skipping ATA ritual (--SkipATA specified)" -Level WARNING; return }
     Write-InstallLog "Executing ATA Unified Ritual..." -Level INFO
     if ($DryRun) { return }
-    
     $ataScript = Join-Path $PSScriptRoot "tools\ata\bootstrap_and_ata_pc3_295905.ps1"
-    if (Test-Path $ataScript) {
-        & $ataScript -User "dbugx" -Promote "all" -Triad "force"
-        Write-InstallLog "ATA ritual completed" -Level SUCCESS
-    } else {
-        Write-InstallLog "ATA script not found, skipping" -Level WARNING
-    }
+    if (Test-Path $ataScript) { & $ataScript -User "dbugx" -Promote "all" -Triad "force"; Write-InstallLog "ATA ritual completed" -Level SUCCESS }
+    else { Write-InstallLog "ATA script not found, skipping" -Level WARNING }
 }
 
 function Start-Installation {
     [CmdletBinding()]
     param()
-    
     Write-Host "============================================================" -ForegroundColor Cyan
     Write-Host "  BUGWORLD 2026 - Phase 2 Installer" -ForegroundColor Cyan
     Write-Host "  Version: $InstallerVersion" -ForegroundColor Cyan
     Write-Host "============================================================" -ForegroundColor Cyan
-    
     Write-InstallLog "Installation started" -Level INFO
-    if ($DryRun) { Write-InstallLog "⚠️  DRY RUN MODE - No changes will be made" -Level WARNING }
-    
+    if ($DryRun) { Write-InstallLog "️  DRY RUN MODE - No changes will be made" -Level WARNING }
     try {
         $manifest = Initialize-InstallManifest
         Create-ThreeRootStructure -Manifest $manifest
@@ -295,7 +208,6 @@ function Start-Installation {
         Write-RegistryKeys -Manifest $manifest
         Set-EnvironmentVariables -Manifest $manifest
         Invoke-ATARitual -Manifest $manifest
-        
         Write-Host "============================================================" -ForegroundColor Green
         if ($DryRun) { Write-Host "  DRY RUN COMPLETE" -ForegroundColor Yellow } else { Write-Host "  INSTALLATION SUCCESSFUL" -ForegroundColor Green }
         Write-Host "============================================================" -ForegroundColor Green
@@ -309,4 +221,38 @@ function Start-Installation {
     }
 }
 
+# ============================================================================
+# TASK-061: GUID Validation Module Integration (Bugbase Conflict Check)
+# ============================================================================
+$validationModulePath = Join-Path $PSScriptRoot "src\validation\Validate-Guid.psm1"
+Import-Module $validationModulePath -Force
+
+Write-InstallLog "Validating GUID against Bugbase node_registry: $GUID (TASK-061)" -Level INFO
+$guidValidation = Get-ValidatedGuid -ProposedGUID $GUID
+
+if (-not $guidValidation.IsValid) {
+    Write-InstallLog "❌ GUID VALIDATION FAILED: $($guidValidation.Message)" -Level ERROR
+    Write-Host "Installation aborted. Please provide a valid, unique FSC62+ compliant GUID." -ForegroundColor Red
+    exit 1
+}
+Write-InstallLog "✅ GUID validation passed (FSC62+ compliant and no Bugbase conflicts)." -Level SUCCESS
+
+# ============================================================================
+# TASK-062: ENV Validation Module Integration (Multi-Environment Support)
+# ============================================================================
+$envValidationModulePath = Join-Path $PSScriptRoot "src\validation\Validate-Env.psm1"
+Import-Module $envValidationModulePath -Force
+
+Write-InstallLog "Validating ENV '$ENV' for GUID '$GUID' (TASK-062)" -Level INFO
+$envValidation = Get-ValidatedEnv -GUID $GUID -ProposedENV $ENV
+
+if (-not $envValidation.IsValid) {
+    Write-InstallLog "❌ ENV VALIDATION FAILED: $($envValidation.Message)" -Level ERROR
+    Write-Host "Installation aborted. Please provide a valid, unique ENV identifier." -ForegroundColor Red
+    exit 1
+}
+Write-InstallLog "✅ ENV validation passed (Format valid and unique within GUID scope)." -Level SUCCESS
+
+# Execute installation
 Start-Installation
+
