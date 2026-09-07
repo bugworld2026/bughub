@@ -1,0 +1,123 @@
+{
+  "manifest_version": "1.0.0",
+  "created_at": "{{TIMESTAMP}}",
+  "client_info": {
+    "guid": "{{FSC62+-VALIDATED-GUID}}",
+    "env": "{{ENV-IDENTIFIER}}",
+    "installed_at": "{{TIMESTAMP}}",
+    "installer_version": "1.0.0"
+  },
+  "permanent_nodes": {
+    "secret_agent": {
+      "type": "PTS/APTS",
+      "identity": "dbugsecret-agent",
+      "admin_identity": "adminsecret-agent",
+      "path": "C:\\dbug\\agent\\x\\0\\{{GUID}}\\{{ENV}}\\secret-agent\\mcp\\server.py",
+      "port": "{{ALLOCATED-FROM-2000-SERIES}}",
+      "permanent": true,
+      "services_access": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
+    },
+    "superid": {
+      "type": "PTS/APTS",
+      "identity": "dbug{{SUPERID-FORM}}",
+      "admin_identity": "admin{{SUPERID-FORM}}",
+      "path": "C:\\dbug\\superid\\x\\0\\{{GUID}}\\{{ENV}}\\{{SUPERID-FORM}}\\mcp\\server.py",
+      "port": "{{ALLOCATED-FROM-2000-SERIES}}",
+      "permanent": true,
+      "services_access": [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012],
+      "generation_rule": "FSC62+ alphabet (a-z, 0-9, A-Z, dash) derived from GUID"
+    }
+  },
+  "filesystem": {
+    "roots": [
+      "C:\\dbug\\agent\\",
+      "C:\\dbug\\superid\\",
+      "C:\\dbug\\workspace\\"
+    ],
+    "directories": [
+      "C:\\dbug\\workspace\\services\\",
+      "C:\\dbug\\workspace\\sessions\\x\\0\\logs\\",
+      "C:\\dbug\\workspace\\docs\\",
+      "C:\\dbug\\workspace\\theia-blueprint\\",
+      "C:\\dbug\\workspace\\tiangan-core\\"
+    ],
+    "services": [
+      {"port": 2001, "name": "tiangan-core"},
+      {"port": 2002, "name": "orchestrator"},
+      {"port": 2003, "name": "agent-dashboard"},
+      {"port": 2004, "name": "alias-monitor"},
+      {"port": 2005, "name": "bugswitch-control"},
+      {"port": 2006, "name": "bbc-book-editor"},
+      {"port": 2007, "name": "calculator-electron"},
+      {"port": 2008, "name": "maths-reader"},
+      {"port": 2009, "name": "button-express"},
+      {"port": 2010, "name": "theia-blueprint"},
+      {"port": 2011, "name": "health-orchestrator"},
+      {"port": 2012, "name": "gaia-machine"}
+    ],
+    "mcp_nodes": [
+      {"port": 2103, "identity": "dbugc-", "role": "Primary"},
+      {"port": 2217, "identity": "dbug-q", "role": "Secondary"},
+      {"port": 2124, "identity": "dbugx-", "role": "Tertiary"},
+      {"port": 2116, "identity": "dbugp-", "role": "Guest"},
+      {"port": 2117, "identity": "dbugq-", "role": "Guest"},
+      {"port": 2317, "identity": "dbugqq", "role": "Guest"}
+    ],
+    "alias_root": {
+      "port": 3101,
+      "alias": "absol",
+      "formal": "absol-",
+      "path": "C:\\dbug\\alias\\x\\0\\a\\b\\s\\o\\l-\\l-\\mcp\\server.py"
+    }
+  },
+  "registry": {
+    "keys": [
+      "HKLM\\SOFTWARE\\BUGWORLD\\InstallPath",
+      "HKLM\\SOFTWARE\\BUGWORLD\\Version",
+      "HKLM\\SOFTWARE\\BUGWORLD\\GUID",
+      "HKLM\\SOFTWARE\\BUGWORLD\\ENV",
+      "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BUGWORLD"
+    ],
+    "environment_variables": [
+      "BUGWORLD_ROOT",
+      "BUGWORLD_GUID",
+      "BUGWORLD_ENV"
+    ]
+  },
+  "cassette_workflow": {
+    "insert": {
+      "tool": "tools/py/insert_cassette.py",
+      "manifests": "C:\\dbug\\tools\\csv\\",
+      "target_drive": "NcpM (thousand-series)"
+    },
+    "eject": {
+      "tool": "tools/py/eject_cassette.py",
+      "preserves": ["secret_agent", "superid"]
+    }
+  },
+  "governance": {
+    "triple_gate": {
+      "bugswitch_required": "OFF",
+      "ata_required": true,
+      "identity_validation": "governance_triad"
+    },
+    "wizards": [
+      "Wizard 1: Team Formation",
+      "Wizard 2: ATA Ritual",
+      "Wizard 3: BUGSWITCH Toggle",
+      "Wizard 4: BBC BOOK Editing"
+    ]
+  },
+  "validation": {
+    "guid_validation": {
+      "alphabet": "FSC62+ (a-z, 0-9, A-Z, dash)",
+      "conflict_check": "Bugbase node_registry lookup",
+      "tool": "tools/py/validate_guid.ps1"
+    },
+    "env_validation": {
+      "format": "alphanumeric + dash",
+      "uniqueness": "per GUID scope",
+      "multi_env_support": true
+    }
+  }
+}
