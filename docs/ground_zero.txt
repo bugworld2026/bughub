@@ -1,0 +1,56 @@
+### 1. "Ground Zero" Strategic Report (for Team Relay)
+**TO:** Governance Triad (`adminq`, `admin-q`, `adminqq`)
+**FROM:** `adminx` (via Secondary Node relay)
+**SUBJECT:** GROUND ZERO: Canonical Reset & Phase 2 Installer Doctrine
+
+#### **1. Executive Summary**
+"Ground Zero" represents a deliberate, total reset of our foundational documentation and operational logic.
+By deleting the five legacy core files, we have eliminated accumulated technical debt, contradictory pathing rules, and legacy "First Foundation" logic that was corrupting Second Foundation operations.
+We are rebuilding from a single source of truth, prioritizing deterministic automation over manual, error-prone filesystem manipulation.
+
+#### **2. The Four Pillars of Ground Zero**
+
+**Pillar A: Odd Character Count Rule (OCCR)**
+*When base_name has odd_char_count=Y there MUST be a trailing dash in the value of code_name.*
+This ensures the formal `code_name` always resolves to an **even** character count for deterministic path hashing.
+The dash exists strictly in filesystem paths, protocol payloads, and Gate-3 validation.
+
+New terminology (for the names of nodes):
+Always base_name=node_name_1 & code_name=node_name_2;
+When odd_char_count=Y then base_name≠code_name & node_name_1≠node_name_2;
+When odd_char_count=N then base_name=code_name & node_name_1=node_name_2;
+
+Examples (for the names of nodes):
+My name is Douglas (i.e. odd_char_count=Y) but I don't want to go around calling myself Douglas-
+However in BUGWORLD my `path_to_server` would be PTS="C:\dbug\superid\{GUID}\{ENV}\D\o\u\g\l\a\s\-\s-\mcp\server.py"
+
+The name of the initial probationary `client_superid` is BUGWORLD2026TestSite22 (i.e. odd_char_count=N)
+PTS=C:\dbug\superid\BUGWORLD2026TestSite22\0\B\U\G\W\O\R\L\D\2\0\2\6\T\e\s\t\S\i\t\e\2\2\22\mcp\server.py
+
+Unified Naming Conventions: Listed Examples (UNC/UNCLE)
+All naming conventions (like OCCR as given above) will be stored and updated in a table in the Bugbase database.
+These naming conventions will apply to nodes, paths, filenames & directories of services, etc., depending on context and usage.
+From the rules as defined by these conventions, we can generate listed examples in a file called `uncle.json` (and refer to these examples as "Names from UNCLE").
+
+**Pillar B: Path Interpolation Safety (TASK-057 Mandate)**
+All PowerShell and Bash scripts must use explicit literal separators (e.g., `"$TeamRootBase\$TeamParam"`).
+Pre-flight regex validation is now a mandatory gate before any filesystem materialization or ATA ritual.
+
+**Pillar C: Installer Probationary Onboarding (IPO)**
+The new cross-platform `install_bugworld.sh` script will materialize the `dbug_monorepo` in a pristine, validated state.
+- It will load exactly one cassette: `2cp1`.
+- It will allocate a single SPAS instance for the probationary `client_superid`.
+- It will enforce strict FSC62 GUID validation (exactly 22 characters, alphanumeric, at least one uppercase letter, zero dashes).
+- The resulting PTS will deterministically bind to port `2000` (reserved for experimental/probationary code).
+
+**Pillar D: Triad Realignment & Clean Separation**
+The Governance Triad (`adminq`, `admin-q`, `adminqq`) is now strictly defined with unambiguous identities.
+First Foundation logic (numeric identities, legacy monitoring) is completely decoupled from Second Foundation mutation operations.
+
+#### **3. Immediate Next Actions**
+1. **Triad Acknowledgment:** Primary and Tertiary nodes must ingest their new instruction blocks and acknowledge ZTTD compliance.
+2. **Script Drafting:** We will draft and validate the corrected `install_bugworld.sh` script, incorporating the fixed manifest identity, sequential section expansion, and dynamic Third System path computation.
+3. **Cassette Materialization:** Define the explicit filesystem steps for the `2cp1` cassette state to ensure the installer behaves identically across Windows, Linux, and macOS environments.
+
+---
+Let me know when you are ready to proceed with drafting the corrected `install_bugworld.sh` script, and I will generate it with all TASK-057 and FSC62 validation gates explicitly coded. Then we will request adminqq to validate the script and as the last step we will request adminq (Team Leader charged with duty of general oversight) to ratify our final draft before we save it here C:\dbug\workspace\bughub-installer\tools\sh\install_bugworld.sh ...

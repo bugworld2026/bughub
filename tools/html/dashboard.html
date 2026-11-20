@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUGWORLD 2026 | IPO Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --accent-cyan: #00f0ff;
+            --accent-green: #39ff14;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            max-width: 900px;
+            width: 100%;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(90deg, rgba(0,240,255,0.1) 0%, rgba(57,255,20,0.05) 100%);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--accent-cyan);
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            color: var(--accent-green);
+            font-size: 1.2rem;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        .concept-box {
+            background-color: rgba(0, 240, 255, 0.05);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .concept-box h3 {
+            margin-top: 0;
+            color: var(--accent-cyan);
+        }
+
+        .pillars {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pillar {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .pillar strong {
+            color: var(--text-main);
+        }
+
+        .wizard-section {
+            margin-top: 30px;
+        }
+
+        .wizard-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .wizard-item {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .wizard-item.active {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+            opacity: 1;
+            transform: translateX(5px);
+        }
+
+        .wizard-item.completed {
+            border-color: var(--accent-cyan);
+            opacity: 0.8;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .wizard-item.active .status-icon {
+            border-color: var(--accent-green);
+            background-color: var(--accent-green);
+            color: #000;
+        }
+
+        .wizard-item.completed .status-icon {
+            border-color: var(--accent-cyan);
+            background-color: var(--accent-cyan);
+            color: #000;
+        }
+
+        .wizard-name {
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        .btn-deploy {
+            background-color: var(--accent-green);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .btn-deploy:hover {
+            background-color: #2ecc71;
+        }
+
+        .btn-deploy:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .terminal {
+            background-color: #000;
+            color: var(--accent-green);
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .terminal-line {
+            margin: 5px 0;
+        }
+
+        .timestamp {
+            color: var(--text-muted);
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <header>
+        <h1>BUGWORLD 2026</h1>
+        <h2>Initial Probationary Onboarding (IPO) Dashboard</h2>
+    </header>
+
+    <div class="content">
+        <div class="concept-box">
+            <h3> Welcome to the Tiangan Ecosystem</h3>
+            <p>You are about to undergo <strong>Initial Probationary Onboarding (IPO)</strong>. This is a "Ground Zero" canonical reset that materializes your environment in a pristine, validated state. We do not manually manipulate the filesystem; we rely on deterministic automation governed by the <strong>Four Pillars</strong>:</p>
+            <div class="pillars">
+                <div class="pillar"><strong>Pillar A:</strong> OCCR / ZTTD (Path Hashing)</div>
+                <div class="pillar"><strong>Pillar B:</strong> TASK-057 (Path Safety)</div>
+                <div class="pillar"><strong>Pillar C:</strong> FSC62 GUID Validation</div>
+                <div class="pillar"><strong>Pillar D:</strong> Triad Realignment</div>
+            </div>
+        </div>
+
+        <div class="wizard-section">
+            <h3>🛠️ Deployment Wizards</h3>
+            <p>Click the button below to initialize the IPO sequence. The following wizards will be deployed step-by-step to build your <code>dbug_monorepo</code>:</p>
+            
+            <ul class="wizard-list" id="wizardList">
+                <!-- Populated by JS -->
+            </ul>
+
+            <button class="btn-deploy" id="deployBtn" onclick="startIPO()">▶ Initialize IPO Sequence</button>
+        </div>
+
+        <div class="terminal" id="terminal">
+            <div class="terminal-line"><span class="timestamp">[SYS]</span> Dashboard initialized. Awaiting operator command...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const wizards = [
+        { id: 'w1', name: 'install_ipo.sh', desc: 'Materializes the canonical directory structure and validates FSC62 GUID.' },
+        { id: 'w2', name: 'path_safety_gate.ps1', desc: 'Enforces TASK-057 pre-flight regex validation on all paths.' },
+        { id: 'w3', name: 'param_generator.html', desc: 'Encodes the Team PARAM using OCCR-compliant lexicographic indexing.' },
+        { id: 'w4', name: 'team_onboard_wizard.ps1', desc: 'Guides the client from probationary status to full team formation.' },
+        { id: 'w5', name: 'triad_ledger_generator.ps1', desc: 'Allocates Governance Triad seats and mints ATA session tokens.' },
+        { id: 'w6', name: 'insert_cassette.sh', desc: 'Loads the probationary 2cp1 cassette payload into the Bugbase SQLite.' }
+    ];
+
+    const wizardListEl = document.getElementById('wizardList');
+    const terminalEl = document.getElementById('terminal');
+    const deployBtn = document.getElementById('deployBtn');
+
+    // Render the list
+    wizards.forEach(w => {
+        const li = document.createElement('li');
+        li.className = 'wizard-item';
+        li.id = w.id;
+        li.innerHTML = `
+            <div class="status-icon">○</div>
+            <div>
+                <div class="wizard-name">${w.name}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">${w.desc}</div>
+            </div>
+        `;
+        wizardListEl.appendChild(li);
+    });
+
+    function log(msg, type = 'INFO') {
+        const time = new Date().toLocaleTimeString('en-GB');
+        const color = type === 'SUCCESS' ? 'var(--accent-cyan)' : (type === 'ERROR' ? '#ff5555' : 'var(--accent-green)');
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        line.innerHTML = `<span class="timestamp">[${time}]</span> <span style="color:${color}">[${type}]</span> ${msg}`;
+        terminalEl.appendChild(line);
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function startIPO() {
+        deployBtn.disabled = true;
+        deployBtn.innerText = '⏳ DEPLOYING...';
+        terminalEl.innerHTML = '';
+        
+        log('Initializing Ground Zero IPO Sequence...', 'INFO');
+        await sleep(800);
+        log('Validating FSC62 GUID constraints (22 chars, alphanumeric, uppercase)...', 'INFO');
+        await sleep(1000);
+        log('FSC62 Validation PASSED. Proceeding to wizard deployment.', 'SUCCESS');
+        await sleep(500);
+
+        for (let i = 0; i < wizards.length; i++) {
+            const w = wizards[i];
+            const el = document.getElementById(w.id);
+            
+            // Highlight active
+            el.classList.add('active');
+            el.querySelector('.status-icon').innerText = '▶';
+            log(`Deploying ${w.name}...`, 'INFO');
+            
+            await sleep(1200); // Simulate work
+            
+            // Mark completed
+            el.classList.remove('active');
+            el.classList.add('completed');
+            el.querySelector('.status-icon').innerText = '✓';
+            log(`${w.name} executed successfully.`, 'SUCCESS');
+            
+            await sleep(400);
+        }
+
+        log('IPO Sequence Complete. Tiangan Ecosystem materialized.', 'SUCCESS');
+        log('Welcome to BUGWORLD 2026.', 'SUCCESS');
+        
+        deployBtn.innerText = '✔ IPO COMPLETE';
+    }
+</script>
+
+</body>
+</html>

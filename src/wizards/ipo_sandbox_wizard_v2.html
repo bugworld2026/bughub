@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BUGWORLD - IPO Sandbox Migration Wizard (v2)</title>
+    <style>
+        body { background-color: #1e1e1e; color: #d4d4d4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; }
+        .container { max-width: 700px; margin: 0 auto; background: #252526; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #007acc; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h3 { color: #9cdcfe; margin-top: 25px; border-left: 3px solid #007acc; padding-left: 10px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #9cdcfe; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; background: #3c3c3c; border: 1px solid #555; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        button { margin-top: 25px; width: 100%; padding: 12px; background: #0e639c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background: #1177bb; }
+        .note { font-size: 0.85em; color: #888; margin-top: 5px; }
+        .workflow-box { background: #1e1e1e; border: 1px solid #007acc; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .workflow-box p { margin: 5px 0; color: #d4d4d4; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; background: #1e1e1e; padding: 15px; border-radius: 4px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 10px; margin-top: 0; font-weight: normal; color: #d4d4d4; }
+        .checkbox-group input { width: auto; margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>IPO Sandbox Migration Wizard (v2)</h2>
+        
+        <div class="workflow-box">
+            <strong>Workflow Protocol:</strong>
+            <p>1. Generate the partial script below.</p>
+            <p>2. <strong>SAVE</strong> the downloaded file to: <code>C:\dbug\workspace\bughub-installer\src\templates\ps1\</code></p>
+            <p>3. Review and edit the script in VS Code.</p>
+            <p>4. Once validated, run the "Promote" script to move it to <code>tools\ps1\</code> for execution.</p>
+        </div>
+
+        <label for="dbPath">IPO Bugbase Path (bugbase.db)</label>
+        <input type="text" id="dbPath" value="C:\dbug\workspace\sessions\{GUID_CA}\0\db\bugbase.db">
+        <div class="note">Replace {GUID_CA} with your actual Client Identification Code.</div>
+
+        <label for="tableName">Target Table</label>
+        <select id="tableName">
+            <option value="role_instances">role_instances</option>
+            <option value="ata_state">ata_state</option>
+            <option value="team_ledger">team_ledger</option>
+        </select>
+
+        <h3>Standard Schema Extension</h3>
+        <label for="colName">Custom Column Name</label>
+        <input type="text" id="colName" placeholder="e.g., custom_metadata">
+        <div class="note">ZTTD Rule: Must not end with a trailing dash (-).</div>
+
+        <label for="colType">Data Type</label>
+        <select id="colType">
+            <option value="TEXT">TEXT</option>
+            <option value="INTEGER">INTEGER</option>
+            <option value="REAL">REAL</option>
+        </select>
+
+        <h3>ADCO Lineage Integration (+FSC62+ Derivation Engine)</h3>
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="add_origin_dist" checked> Add <code>origin_distance</code> (INTEGER) - Distance from Origin Cluster</label>
+            <label><input type="checkbox" id="add_path_binary" checked> Add <code>adco_path_binary</code> (TEXT) - The 3-bit opcode sequence</label>
+            <label><input type="checkbox" id="add_father_id"> Add <code>father_cell_id</code> (TEXT) - Further parent cell index</label>
+            <label><input type="checkbox" id="add_mother_id"> Add <code>mother_cell_id</code> (TEXT) - Nearer parent cell index</label>
+            <label><input type="checkbox" id="add_lineage_type"> Add <code>lineage_type</code> (TEXT) - 'father', 'mother', 'child', 'sister'</label>
+            <label><input type="checkbox" id="add_full_name"> Add <code>full_name_fsc64</code> (TEXT) - Encoded in +FSC62+ alphabet</label>
+        </div>
+
+        <button onclick="generateScript()">Generate Partial PowerShell Script</button>
+    </div>
+
+    <script>
+        function generateScript() {
+            const dbPath = document.getElementById('dbPath').value;
+            const tableName = document.getElementById('tableName').value;
+            const colName = document.getElementById('colName').value.trim();
+            const colType = document.getElementById('colType').value;
+
+            if (colName.endsWith('-')) {
+                alert("ZTTD VIOLATION: Column name cannot end with a trailing dash.");
+                return;
+            }
+
+            let migrations = [];
+            if (colName) migrations.push(`{ name: '${colName}', type: '${colType}' }`);
+            if (document.getElementById('add_origin_dist').checked) migrations.push(`{ name: 'origin_distance', type: 'INTEGER' }`);
+            if (document.getElementById('add_path_binary').checked) migrations.push(`{ name: 'adco_path_binary', type: 'TEXT' }`);
+            if (document.getElementById('add_father_id').checked) migrations.push(`{ name: 'father_cell_id', type: 'TEXT' }`);
+            if (document.getElementById('add_mother_id').checked) migrations.push(`{ name: 'mother_cell_id', type: 'TEXT' }`);
+            if (document.getElementById('add_lineage_type').checked) migrations.push(`{ name: 'lineage_type', type: 'TEXT' }`);
+            if (document.getElementById('add_full_name').checked) migrations.push(`{ name: 'full_name_fsc64', type: 'TEXT' }`);
+
+            if (migrations.length === 0) {
+                alert("Please select at least one column to add.");
+                return;
+            }
+
+            const ps1Template = `# IPO Sandbox Migration Script (PARTIAL - UNVALIDATED)
+# Generated by BUGWORLD Wizard v2
+# Action: Add ADCO Lineage columns to table '${tableName}'
+# STATUS: This script is in the 'templates' folder. Review and promote to 'tools' before execution.
+
+$ErrorActionPreference = 'Stop'
+$IpoBugbasePath = "${dbPath}"
+
+if (-not (Test-Path $IpoBugbasePath)) {
+    Write-Host "FATAL: Bugbase not found at $IpoBugbasePath" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Starting IPO Sandbox Migration..." -ForegroundColor Cyan
+
+$columnsToAdd = @(
+    ${migrations.join(',\n    ')}
+)
+
+foreach ($col in $columnsToAdd) {
+    $exists = sqlite3 $IpoBugbasePath "PRAGMA table_info(${tableName});" | ForEach-Object { ($_ -split '\\|')[1] } | Where-Object { $_ -eq $col.name }
+    
+    if ($exists) {
+        Write-Host "  Column '$($col.name)' already exists. Skipping." -ForegroundColor Yellow
+    } else {
+        Write-Host "  Adding column '$($col.name)' ($($col.type))..." -ForegroundColor Green
+        sqlite3 $IpoBugbasePath "ALTER TABLE ${tableName} ADD COLUMN $($col.name) $($col.type);"
+    }
+}
+
+Write-Host "Migration complete." -ForegroundColor Cyan
+`;
+
+            const blob = new Blob([ps1Template], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `migrate_${tableName}_adco_v2_PARTIAL.ps1`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
